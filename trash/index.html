@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Greenneeka Controller</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+    <!--   
+    <link rel="manifest" href="./manifest.json" />-->
+    <link rel="stylesheet" href="./pwa/css/styles.css?v=1.2.2" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌿 Greenneeka Controller</h1>
+      <div class="subtitle">Smart IoT Device Control</div>
+
+      <div id="autoDiscoverSection">
+        <button id="discoverBtn">🔍 Auto-Discover Greenneeka</button>
+        <div id="discoverStatus"></div>
+      </div>
+
+      <div class="separator">— OR —</div>
+
+      <div id="manualSection">
+        <input
+          type="text"
+          id="ipInput"
+          placeholder="Enter Greenneeka IP address manually"
+        />
+        <button id="manualConnectBtn">Connect Manually</button>
+      </div>
+
+      <div id="controlPanel" style="display: none">
+        <div class="status off" id="statusDiv">LED: OFF</div>
+        <button id="toggleLEDBtn">💡 Toggle LED</button>
+
+        <textarea
+          id="textInput"
+          placeholder="Enter text to send to Greenneeka..."
+          rows="3"
+        ></textarea>
+        <button id="sendTextBtn">📤 Send Text to Greenneeka</button>
+      </div>
+
+      <div id="message"></div>
+    </div>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/greenneeka/service-worker.js")
+          .then((registration) => {
+            console.log("Service Worker зарегистрирован:", registration);
+          })
+          .catch((error) => {
+            console.error("Ошибка при регистрации Service Worker:", error);
+          });
+      }
+    </script>
+    <script src="./pwa/js/app.js?v=1.2.2"></script>
+  </body>
+</html>
