@@ -1,5 +1,18 @@
 let espIP = "";
 
+document.addEventListener("DOMContentLoaded", function () {
+  document
+    .getElementById("discoverBtn")
+    .addEventListener("click", discoverGreenneeka);
+  document
+    .getElementById("manualConnectBtn")
+    .addEventListener("click", connectManually);
+  document.getElementById("toggleLEDBtn").addEventListener("click", toggleLED);
+  document.getElementById("sendTextBtn").addEventListener("click", sendText);
+
+  discoverGreenneeka();
+});
+
 async function discoverGreenneeka() {
   const discoverBtn = document.getElementById("discoverBtn");
   const discoverStatus = document.getElementById("discoverStatus");
@@ -10,10 +23,9 @@ async function discoverGreenneeka() {
   clearMessage();
 
   try {
-    // Пробуем подключиться по mDNS имени
     const response = await fetch("http://greenneeka.local/api/status", {
       method: "GET",
-      signal: AbortSignal.timeout(3000), // 3 секунды таймаут
+      signal: AbortSignal.timeout(3000),
     });
 
     if (response.ok) {
@@ -152,8 +164,3 @@ function isValidIP(ip) {
     return num >= 0 && num <= 255;
   });
 }
-
-// Автоматически пытаемся найти Greenneeka при загрузке страницы
-window.onload = function () {
-  discoverGreenneeka();
-};

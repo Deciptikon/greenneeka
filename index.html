@@ -14,9 +14,7 @@
       <div class="subtitle">Smart IoT Device Control</div>
 
       <div id="autoDiscoverSection">
-        <button onclick="discoverGreenneeka()" id="discoverBtn">
-          🔍 Auto-Discover Greenneeka
-        </button>
+        <button id="discoverBtn">🔍 Auto-Discover Greenneeka</button>
         <div id="discoverStatus"></div>
       </div>
 
@@ -28,19 +26,19 @@
           id="ipInput"
           placeholder="Enter Greenneeka IP address manually"
         />
-        <button onclick="connectManually()">Connect Manually</button>
+        <button id="manualConnectBtn">Connect Manually</button>
       </div>
 
       <div id="controlPanel" style="display: none">
         <div class="status off" id="statusDiv">LED: OFF</div>
-        <button onclick="toggleLED()">💡 Toggle LED</button>
+        <button id="toggleLEDBtn">💡 Toggle LED</button>
 
         <textarea
           id="textInput"
           placeholder="Enter text to send to Greenneeka..."
           rows="3"
         ></textarea>
-        <button onclick="sendText()">📤 Send Text to Greenneeka</button>
+        <button id="sendTextBtn">📤 Send Text to Greenneeka</button>
       </div>
 
       <div id="message"></div>
@@ -57,6 +55,6 @@
           });
       }
     </script>
-    <script type="module" src="./pwa/js/app.js"></script>
+    <script src="./pwa/js/app.js"></script>
   </body>
 </html>
