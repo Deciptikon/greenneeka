@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Greenneeka Controller</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 50px;
+        background: #f0f8f0;
+        color: #2c3e50;
+      }
+      .container {
+        max-width: 450px;
+        margin: 0 auto;
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2e8b57;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        color: #7f8c8d;
+        margin-bottom: 25px;
+      }
+      input,
+      button,
+      textarea {
+        padding: 12px;
+        margin: 8px;
+        width: 90%;
+        border: 1px solid #2e8b57;
+        border-radius: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      button {
+        background: #2e8b57;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s;
+      }
+      button:hover {
+        background: #3cb371;
+      }
+      button:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+      }
+      .status {
+        margin: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .on {
+        background: #d4f8e8;
+        color: #27ae60;
+        border: 2px solid #27ae60;
+      }
+      .off {
+        background: #f8d7da;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+      }
+      #message {
+        margin-top: 20px;
+        font-weight: bold;
+        padding: 12px;
+        border-radius: 8px;
+      }
+      .success {
+        background: #d4f8e8;
+        color: #27ae60;
+      }
+      .error {
+        background: #f8d7da;
+        color: #e74c3c;
+      }
+      .info {
+        background: #d6eaf8;
+        color: #2980b9;
+      }
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #2e8b57;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌿 Greenneeka Controller</h1>
+      <div class="subtitle">Smart IoT Device Control</div>
+
+      <div id="autoDiscoverSection">
+        <button onclick="discoverGreenneeka()" id="discoverBtn">
+          🔍 Auto-Discover Greenneeka
+        </button>
+        <div id="discoverStatus"></div>
+      </div>
+
+      <div style="margin: 20px 0; color: #7f8c8d">— OR —</div>
+
+      <div id="manualSection">
+        <input
+          type="text"
+          id="ipInput"
+          placeholder="Enter Greenneeka IP address manually"
+        />
+        <button onclick="connectManually()">Connect Manually</button>
+      </div>
+
+      <div id="controlPanel" style="display: none">
+        <div class="status off" id="statusDiv">LED: OFF</div>
+        <button onclick="toggleLED()">💡 Toggle LED</button>
+
+        <textarea
+          id="textInput"
+          placeholder="Enter text to send to Greenneeka..."
+          rows="3"
+        ></textarea>
+        <button onclick="sendText()">📤 Send Text to Greenneeka</button>
+      </div>
+
+      <div id="message"></div>
+    </div>
+
+    <script>
+      let espIP = "";
+
+      async function discoverGreenneeka() {
+        const discoverBtn = document.getElementById("discoverBtn");
+        const discoverStatus = document.getElementById("discoverStatus");
+
+        discoverBtn.disabled = true;
+        discoverBtn.innerHTML = '<div class="loading"></div> Discovering...';
+        discoverStatus.innerHTML = "";
+        clearMessage();
+
+        try {
+          // Пробуем подключиться по mDNS имени
+          const response = await fetch("http://greenneeka.local/api/status", {
+            method: "GET",
+            signal: AbortSignal.timeout(3000), // 3 секунды таймаут
+          });
+
+          if (response.ok) {
+            espIP = "greenneeka.local";
+            showControlPanel();
+            discoverStatus.innerHTML =
+              '<div class="success">✅ Greenneeka found at greenneeka.local</div>';
+            showMessage("Successfully connected to Greenneeka!", "success");
+          } else {
+            throw new Error("HTTP error: " + response.status);
+          }
+        } catch (error) {
+          discoverStatus.innerHTML =
+            '<div class="error">❌ Auto-discovery failed</div>';
+          showMessage(
+            "Could not auto-discover Greenneeka. Try manual connection.",
+            "error"
+          );
+        } finally {
+          discoverBtn.disabled = false;
+          discoverBtn.innerHTML = "🔍 Auto-Discover Greenneeka";
+        }
+      }
+
+      function connectManually() {
+        espIP = document.getElementById("ipInput").value.trim();
+        if (!espIP) {
+          showMessage("Please enter Greenneeka IP address", "error");
+          return;
+        }
+
+        // Простая валидация IP
+        if (!isValidIP(espIP) && espIP !== "greenneeka.local") {
+          showMessage("Please enter a valid IP address or hostname", "error");
+          return;
+        }
+
+        showControlPanel();
+        showMessage(`Connecting to ${espIP}...`, "info");
+
+        // Проверяем подключение
+        checkConnection();
+      }
+
+      async function checkConnection() {
+        try {
+          const response = await fetch(`http://${espIP}/api/status`, {
+            method: "GET",
+            signal: AbortSignal.timeout(3000),
+          });
+
+          if (response.ok) {
+            showMessage("Successfully connected to Greenneeka!", "success");
+          } else {
+            throw new Error("HTTP error: " + response.status);
+          }
+        } catch (error) {
+          showMessage(
+            "Connected but cannot verify. Some features may not work.",
+            "error"
+          );
+        }
+      }
+
+      function showControlPanel() {
+        document.getElementById("controlPanel").style.display = "block";
+        document.getElementById("ipInput").value = espIP;
+      }
+
+      async function toggleLED() {
+        if (!espIP) {
+          showMessage("Please connect to Greenneeka first", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://${espIP}/api/toggle`, {
+            method: "POST",
+          });
+          const data = await response.json();
+
+          const statusDiv = document.getElementById("statusDiv");
+          statusDiv.textContent = `LED: ${data.led ? "ON" : "OFF"}`;
+          statusDiv.className = `status ${data.led ? "on" : "off"}`;
+
+          showMessage(`LED ${data.led ? "ON" : "OFF"}`, "success");
+        } catch (error) {
+          showMessage("Error toggling LED: " + error.message, "error");
+        }
+      }
+
+      async function sendText() {
+        if (!espIP) {
+          showMessage("Please connect to Greenneeka first", "error");
+          return;
+        }
+
+        const text = document.getElementById("textInput").value.trim();
+        if (!text) {
+          showMessage("Please enter some text first", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://${espIP}/api/print`, {
+            method: "POST",
+            body: text,
+          });
+          const result = await response.text();
+          showMessage("✅ Text sent to Greenneeka!", "success");
+          document.getElementById("textInput").value = ""; // Очищаем поле
+        } catch (error) {
+          showMessage("Error sending text: " + error.message, "error");
+        }
+      }
+
+      function showMessage(text, type) {
+        const messageDiv = document.getElementById("message");
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+      }
+
+      function clearMessage() {
+        const messageDiv = document.getElementById("message");
+        messageDiv.textContent = "";
+        messageDiv.className = "";
+      }
+
+      function isValidIP(ip) {
+        const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (!ipPattern.test(ip)) return false;
+
+        const parts = ip.split(".");
+        return parts.every((part) => {
+          const num = parseInt(part, 10);
+          return num >= 0 && num <= 255;
+        });
+      }
+
+      // Автоматически пытаемся найти Greenneeka при загрузке страницы
+      window.onload = function () {
+        discoverGreenneeka();
+      };
+    </script>
+  </body>
+</html>
