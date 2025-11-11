@@ -1,0 +1,35 @@
+{
+  "name": "Greenneeka",
+  "short_name": "Greenneeka",
+  "description": "WEB-приложение для мониторинга и конфигурации модульной системой управления",
+  "id": "./",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#67006f",
+  "theme_color": "#460096",
+  "icons": [
+    {
+      "src": "./pwa/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./pwa/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./pwa/images/screenshot-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "./pwa/images/screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
+    }
+  ]
+}
