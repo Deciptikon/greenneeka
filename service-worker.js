@@ -1,4 +1,4 @@
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.2";
 const APP_NAME = "greenneeka";
 
 const CACHE_NAME =
@@ -30,6 +30,12 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.url.includes("greenneeka.local")) {
+    event.respondWith(fetch(event.request.url.replace("https://", "http://")));
+  }
+});
+/** 
+self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       return (
@@ -41,7 +47,7 @@ self.addEventListener("fetch", (event) => {
       );
     })
   );
-});
+});*/
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
